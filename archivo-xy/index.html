@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>ARCHIVO Xâ€“Y | Escape Room Cartesiano</title>
+<style>
+:root{
+  --bg:#050b14;
+  --panel:#0b1524;
+  --panel2:#0f1d31;
+  --text:#f2f7ff;
+  --muted:#91a7bf;
+  --accent:#72f0d0;
+  --accent2:#77a8ff;
+  --gold:#ffd166;
+  --danger:#ff627d;
+  --line:#263c56;
+  --ok:#75f0c3;
+  --shadow:0 30px 90px rgba(0,0,0,.5);
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+body{overflow-x:hidden}
+button,input{font:inherit}
+button{cursor:pointer}
+
+#fx{
+  position:fixed;inset:0;z-index:-4;width:100%;height:100%;
+}
+.bg-glow{
+  position:fixed;inset:-20%;z-index:-5;
+  background:
+    radial-gradient(circle at 18% 20%,rgba(67,121,255,.16),transparent 25%),
+    radial-gradient(circle at 85% 18%,rgba(114,240,208,.12),transparent 22%),
+    radial-gradient(circle at 70% 85%,rgba(165,88,255,.10),transparent 26%),
+    linear-gradient(#050b14,#07111f 55%,#050a12);
+}
+.scanlines{
+  position:fixed;inset:0;pointer-events:none;z-index:50;opacity:.06;
+  background:repeating-linear-gradient(to bottom,transparent 0 3px,rgba(255,255,255,.25) 4px);
+  mix-blend-mode:overlay;
+}
+.vignette{
+  position:fixed;inset:0;pointer-events:none;z-index:49;
+  box-shadow:inset 0 0 150px rgba(0,0,0,.75)
+}
+.app{min-height:100vh}
+.scene{
+  min-height:100vh;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:28px;
+  position:relative;
+}
+.scene.active{display:flex;animation:sceneIn .65s cubic-bezier(.2,.8,.2,1)}
+@keyframes sceneIn{
+  from{opacity:0;transform:translateY(16px) scale(.992);filter:blur(8px)}
+  to{opacity:1;transform:none;filter:blur(0)}
+}
+.shell{width:min(1180px,95vw);margin:auto}
+.micro{
+  color:var(--accent);
+  font-size:.74rem;
+  font-weight:900;
+  letter-spacing:.22em;
+  text-transform:uppercase;
+}
+.display{
+  font-size:clamp(3rem,9vw,7.4rem);
+  line-height:.86;
+  margin:.3rem 0 1rem;
+  letter-spacing:-.055em;
+}
+.lead{
+  color:#b7c7d9;
+  font-size:clamp(1rem,2vw,1.28rem);
+  max-width:820px;
+  line-height:1.6
+}
+.hero{
+  display:grid;
+  grid-template-columns:1.15fr .85fr;
+  gap:50px;
+  align-items:center;
+}
+.hero-visual{
+  height:520px;
+  position:relative;
+  display:grid;
+  place-items:center;
+}
+.orbit{
+  position:absolute;border:1px solid rgba(114,240,208,.18);border-radius:50%;
+  animation:spin 18s linear infinite;
+}
+.orbit.o1{width:420px;height:420px}
+.orbit.o2{width:310px;height:310px;animation-direction:reverse;animation-duration:12s}
+.orbit.o3{width:190px;height:190px;animation-duration:8s}
+.orbit:before{
+  content:"";position:absolute;left:50%;top:-5px;width:9px;height:9px;border-radius:50%;
+  background:var(--accent);box-shadow:0 0 24px var(--accent)
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.axis{
+  position:absolute;background:linear-gradient(90deg,transparent,rgba(119,168,255,.65),transparent)
+}
+.axis.x{width:480px;height:1px}
+.axis.y{height:480px;width:1px;background:linear-gradient(transparent,rgba(119,168,255,.65),transparent)}
+.core{
+  width:110px;height:110px;border-radius:30px;transform:rotate(45deg);
+  border:1px solid rgba(114,240,208,.55);
+  background:linear-gradient(135deg,rgba(114,240,208,.12),rgba(119,168,255,.10));
+  box-shadow:0 0 70px rgba(114,240,208,.18),inset 0 0 35px rgba(114,240,208,.10);
+  animation:pulse 3s ease-in-out infinite
+}
+@keyframes pulse{50%{transform:rotate(45deg) scale(1.08);box-shadow:0 0 100px rgba(114,240,208,.28)}}
+
+.btn{
+  border:1px solid rgba(114,240,208,.5);
+  background:linear-gradient(180deg,rgba(114,240,208,.16),rgba(114,240,208,.09));
+  color:#eafff9;
+  padding:14px 20px;
+  border-radius:14px;
+  font-weight:900;
+  letter-spacing:.02em;
+  transition:.25s;
+  box-shadow:0 8px 30px rgba(0,0,0,.25)
+}
+.btn:hover{transform:translateY(-2px);border-color:var(--accent);box-shadow:0 10px 35px rgba(114,240,208,.13)}
+.btn.secondary{
+  border-color:#35506d;background:#0c1a2b;color:#cfe0f2
+}
+.btn.danger{
+  border-color:#743044;background:#26111a;color:#ffc6d0
+}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:26px}
+
+.hud{
+  position:fixed;top:18px;left:18px;right:18px;z-index:30;
+  display:none;justify-content:space-between;align-items:center;gap:16px;
+  pointer-events:none
+}
+.hud.show{display:flex}
+.hud-box{
+  pointer-events:auto;
+  background:rgba(7,16,29,.72);backdrop-filter:blur(14px);
+  border:1px solid #243c58;border-radius:14px;padding:10px 13px;
+  color:#bdd0e5;font-size:.86rem
+}
+.hud-progress{width:min(360px,38vw);height:7px;background:#101d30;border-radius:20px;overflow:hidden;border:1px solid #27425f}
+.hud-progress>div{height:100%;width:0;background:linear-gradient(90deg,var(--accent2),var(--accent));transition:.45s}
+
+.panel{
+  background:linear-gradient(180deg,rgba(13,27,47,.93),rgba(7,16,29,.95));
+  border:1px solid #253e5a;border-radius:24px;
+  box-shadow:var(--shadow);
+}
+.hub-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:30px
+}
+.case{
+  min-height:350px;padding:24px;position:relative;overflow:hidden;
+  transition:.3s;display:flex;flex-direction:column;justify-content:space-between
+}
+.case.locked{opacity:.48;filter:saturate(.5)}
+.case.available:hover{transform:translateY(-6px);border-color:#437197}
+.case.done{border-color:#2e7a64;background:linear-gradient(180deg,rgba(18,58,49,.42),rgba(7,24,23,.92))}
+.case-no{
+  font-size:5rem;line-height:1;font-weight:1000;letter-spacing:-.07em;color:#24405e
+}
+.case.done .case-no{color:#276c5a}
+.case-status{font-weight:900;color:#9eb4ca}
+.case.available .case-status{color:var(--accent)}
+.case.done .case-status{color:#9bf5d7}
+.case-lock{
+  position:absolute;right:20px;top:20px;width:38px;height:38px;border-radius:12px;
+  display:grid;place-items:center;background:#101d2e;border:1px solid #2f4965;color:#7890aa
+}
+.case.available .case-lock{color:var(--accent);border-color:#356c61}
+.case.done .case-lock{color:#9bf5d7}
+.case-line{height:1px;background:linear-gradient(90deg,#2b4562,transparent);margin:14px 0}
+.case p{color:#91a5ba;line-height:1.5}
+
+.challenge-wrap{
+  display:grid;grid-template-columns:1.28fr .72fr;gap:18px;align-items:stretch
+}
+.challenge-main{padding:30px;min-height:600px;display:flex;flex-direction:column}
+.challenge-side{padding:22px;min-height:600px}
+.step-tag{
+  display:inline-flex;align-items:center;gap:8px;width:max-content;
+  padding:7px 10px;border-radius:999px;background:#0c2130;border:1px solid #2d5662;
+  color:#b7efe1;font-size:.78rem;font-weight:900;letter-spacing:.09em;text-transform:uppercase
+}
+.problem{
+  flex:1;display:flex;flex-direction:column;justify-content:center;max-width:850px
+}
+.problem h2{font-size:clamp(2rem,4.4vw,4.2rem);line-height:1.04;margin:18px 0;color:#f4f8fd;letter-spacing:-.035em}
+.problem .math{
+  margin:16px 0 0;padding:18px 20px;border-radius:18px;
+  background:#081423;border:1px solid #294663;
+  font-size:clamp(1.3rem,3vw,2.4rem);font-weight:800;color:#ddecff;
+  box-shadow:inset 0 0 40px rgba(119,168,255,.03)
+}
+.answer-row{margin-top:22px;display:flex;gap:12px;align-items:end}
+.input-wrap{flex:1}
+label{display:block;color:#a9bdd2;font-size:.82rem;font-weight:900;letter-spacing:.06em;text-transform:uppercase}
+input{
+  width:100%;margin-top:7px;background:#071321;border:1px solid #34526e;color:#fff;
+  padding:14px 15px;border-radius:13px;outline:none;font-size:1rem
+²È="24¤í¹±…ÍÍ9…µ”ô‰Ñ•…¡•ÈµÍ•Ñ¥½¸ˆì(€€€¹¥¹¹•É!Q50õ€ñ ĞùáÁ•‘¥•¹Ñ”€‘í´¹¥‘ôƒ
+Ü€‘í´¹±½­Ì¹±•¹Ñ¡ôÁÕ¹Ñ½Ìğ½ Ğù€¬(€€€€€´¹±½­Ì¹µ…À ¡à±¨¤ôù€ñ‘¥Øøñˆø‘íà¹±…‰•±ôğ½ˆøƒŠH€ ‘íà¹…ô¤ğ½‘¥Øù€¤¹©½¥¸ ˆˆ¤¬(€€€€€€ñ‘¥ØÍÑå±”ô‰µ…É¥¸µÑ½ÀèİÁàˆøñˆù¥ÕÉ„èğ½ˆø€‘í´¹É•Ù•…±ôğ½‘¥Øøñ‘¥ØøñˆùÉ…µ•¹Ñ¼èğ½ˆø€‘í´¹™É…µ•¹Ñôğ½‘¥Øù€ì(€€€œ¹…ÁÁ•¹‘¡¥±¡¤(€ô¤ì(€‘½Õµ•¹Ğ¹•Ñ±•µ•¹Ñ	å% ‰É•ÁMÑÕ‘•¹Ğˆ¤¹Ñ•áÑ½¹Ñ•¹ĞõÍÑ…Ñ”¹ÍÑÕ‘•¹Ğ¹¹…µ•ñğ‹ŠPˆì(€‘½Õµ•¹Ğ¹•Ñ±•µ•¹Ñ	å% ‰É•ÁÉ½ÕÀˆ¤¹Ñ•áÑ½¹Ñ•¹ĞõÍÑ…Ñ”¹ÍÑÕ‘•¹Ğ¹É½ÕÁñğ‹ŠPˆì(€‘½Õµ•¹Ğ¹•Ñ±•µ•¹Ñ	å% ‰É•ÁQ¥µ”ˆ¤¹Ñ•áÑ½¹Ñ•¹Ğõ™µÑQ¥µ”¡ÍÑ…Ñ”¹ÍÕÁ•ÉÙ¥Í•¹…Ñ¥Ù•M•½¹‘Ì¤ì(€‘½Õµ•¹Ğ¹•Ñ±•µ•¹Ñ	å% ‰É•Á%¹¥‘•¹ÑÌˆ¤¹Ñ•áÑ½¹Ñ•¹ĞõÍÑ…Ñ”¹ÍÕÁ•ÉÙ¥Í•¹¥¹¥‘•¹ÑÌ¹±•¹Ñ ì(€‘½Õµ•¹Ğ¹•Ñ±•µ•¹Ñ	å% ‰É•ÁÉÉ½ÉÌˆ¤¹Ñ•áÑ½¹Ñ•¹ĞõÍÑ…Ñ”¹ÍÕÁ•ÉÙ¥Í•¹•ÉÉ½ÉÌì(€‘½Õµ•¹Ğ¹•Ñ±•µ•¹Ñ	å% ‰É•Á!¥¹ÑÌˆ¤¹Ñ•áÑ½¹Ñ•¹ĞõÍÑ…Ñ”¹ÍÕÁ•ÉÙ¥Í•¹¡¥¹ÑÌì(€‘½Õµ•¹Ğ¹•Ñ±•µ•¹Ñ	å% ‰É•ÁAÉ½É•ÍÌˆ¤¹Ñ•áÑ½¹Ñ•¹Ğõ€‘íÑ½Ñ…±I•½Ù•É• ¥ô¼‘íÑ½Ñ…±¡…±±•¹•Ì ¥õ€ì(€‘½Õµ•¹Ğ¹•Ñ±•µ•¹Ñ	å% ‰É•Á¡•­Á½¥¹ÑÌˆ¤¹Ñ•áÑ½¹Ñ•¹ĞõÍÑ…Ñ”¹ÍÕÁ•ÉÙ¥Í•¹¡•­Á½¥¹ÑÍA…ÍÍ•¹±•¹Ñ ì((€½¹ÍĞ¥¹¥‘•¹ÑÌõ‘½Õµ•¹Ğ¹•Ñ±•µ•¹Ñ	å% ‰É•Á%¹¥‘•¹Ñ1¥ÍĞˆ¤ì(€¥¹¥‘•¹ÑÌ¹¥¹¹•É!Q50õÍÑ…Ñ”¹ÍÕÁ•ÉÙ¥Í•¹¥¹¥‘•¹ÑÌ¹±•¹Ñ (€€€€ü€ñ‘¥Ø±…ÍÌô‰µ¥É¼ˆù%9%9%Lğ½‘¥Øù€­ÍÑ…Ñ”¹ÍÕÁ•ÉÙ¥Í•¹¥¹¥‘•¹ÑÌ¹µ…À ¡à±¤¤ôù€ñ‘¥Ø±…ÍÌô‰¥¹¥‘•¹ĞµÉ½Üˆø‘í¤¬Åô¸€‘íà¹É•…Í½¹ôƒ
+ÜÁÉ½É•Í¼€‘íà¹ÁÉ½É•ÍÍô¼Ôäƒ
+Ü€‘í¹•Ü…Ñ”¡à¹…Ğ¤¹Ñ½1½…±•Q¥µ•MÑÉ¥¹œ ¥ôğ½‘¥Øù€¤¹©½¥¸ ˆˆ¤(€€€€è€ñ‘¥Ø±…ÍÌô‰¥¹¥‘•¹ĞµÉ½ÜˆùM¥¸¥¹¥‘•¹¥…ÌÉ•¥ÍÑÉ…‘…Ì¸ğ½‘¥Øù€ì((€½¹ÍĞ½¹ÑÉ½±Ìõ‘½Õµ•¹Ğ¹•Ñ±•µ•¹Ñ	å% ‰É•Á½¹ÑÉ½±1¥ÍĞˆ¤ì(€½¹ÑÉ½±Ì¹¥¹¹•É!Q50õ€ñ‘¥Ø±…ÍÌô‰µ¥É¼ˆù=9QI=1L=9QLğ½‘¥Øù€¬(€€€ÍÑ…Ñ”¹ÍÕÁ•ÉÙ¥Í•¹¡•­Á½¥¹ÑÍA…ÍÍ•¹µ…À¡¤ôù€ñ‘¥Ø±…ÍÌô‰½¹ÑÉ½°µÉ½Üˆù½¹ÑÉ½°€‘í¤¬Åô…ÁÉ½‰…‘¼ƒ
+Ü€‘í!-A=%9QMm¥uôÁÕ¹Ñ½Ìğ½‘¥Øù€¤¹©½¥¸ ˆˆ¤¬(€€€€¡ÍÑ…Ñ”¹ÍÕÁ•ÉÙ¥Í•¹¡•­Á½¥¹ÑÍA…ÍÍ•¹±•¹Ñ üˆˆèˆñ‘¥Ø±…ÍÌô½¹ÑÉ½°µÉ½Üœùé¸¹¼¡…ä½¹ÑÉ½±•Ì…ÁÉ½‰…‘½Ì¸ğ½‘¥Øøˆ¤ì)ô()™Õ¹Ñ¥½¸•áÁ½ÉÑM•ÍÍ¥½¹I•Á½ÉĞ ¥ì(€½¹ÍĞ±¥¹•Ìõl(€€€€‰I!%Y<`µdƒ
+ÜIA=IQMM'M8ˆ°(€€€±Õµ¹¼½•ÅÕ¥Á¼è€‘íÍÑ…Ñ”¹ÍÑÕ‘•¹Ğ¹¹…µ•ñğ‹ŠP‰õ€°(€€€ÉÕÁ¼è€‘íÍÑ…Ñ”¹ÍÑÕ‘•¹Ğ¹É½ÕÁñğ‹ŠP‰õ€°(€€€Q¥•µÁ¼…Ñ¥Ù¼è€‘í™µÑQ¥µ”¡ÍÑ…Ñ”¹ÍÕÁ•ÉÙ¥Í•¹…Ñ¥Ù•M•½¹‘Ì¥õ€°(€€€AÕ¹Ñ½ÌÉ•ÕÁ•É…‘½Ìè€‘íÑ½Ñ…±I•½Ù•É• ¥ô¼‘íÑ½Ñ…±¡…±±•¹•Ì ¥õ€°(€€€ÉÉ½É•Ìè€‘íÍÑ…Ñ”¹ÍÕÁ•ÉÙ¥Í•¹•ÉÉ½ÉÍõ€°(€€€A¥ÍÑ…ÌÕÑ¥±¥é…‘…Ìè€‘íÍÑ…Ñ”¹ÍÕÁ•ÉÙ¥Í•¹¡¥¹ÑÍõ€°(€€€%¹¥‘•¹¥…Ìè€‘íÍÑ…Ñ”¹ÍÕÁ•ÉÙ¥Í•¹¥¹¥‘•¹ÑÌ¹±•¹Ñ¡õ€°(€€€½¹ÑÉ½±•Ì‘½•¹Ñ•Ì…ÁÉ½‰…‘½Ìè€‘íÍÑ…Ñ”¹ÍÕÁ•ÉÙ¥Í•¹¡•­Á½¥¹ÑÍA…ÍÍ•¹±•¹Ñ¡ô¼‘í!-A=%9QL¹±•¹Ñ¡õ€°(€€€€ˆˆ°(€€€€‰%9%9%Lèˆ(€tì(€ÍÑ…Ñ”¹ÍÕÁ•ÉÙ¥Í•¹¥¹¥‘•¹ÑÌ¹™½É…  ¡à±¤¤ôù±¥¹•Ì¹ÁÕÍ ¡€‘í¤¬Åô¸€‘íà¹É•…Í½¹ôğ€‘í¹•Ü…Ñ”¡à¹…Ğ¤¹Ñ½1½…±MÑÉ¥¹œ ¥ôğÁÉ½É•Í¼€‘íà¹ÁÉ½É•ÍÍô¼Ôå€¤¤ì(€±¥¹•Ì¹ÁÕÍ  ˆˆ°‰=9QI=1Lèˆ¤ì(€ÍÑ…Ñ”¹ÍÕÁ•ÉÙ¥Í•¹¡•­Á½¥¹ÑÍA…ÍÍ•¹™½É… ¡¤ôù±¥¹•Ì¹ÁÕÍ ¡½¹ÑÉ½°€‘í¤¬Åô…ÁÉ½‰…‘¼•¸€‘í!-A=%9QMm¥uôÁÕ¹Ñ½Í€¤¤ì(€½¹ÍĞ‰±½ˆõ¹•Ü	±½ˆ¡m±¥¹•Ì¹©½¥¸ ‰qq¸ˆ¥t±íÑåÁ”è‰Ñ•áĞ½Á±…¥¸í¡…ÉÍ•ĞõÕÑ˜´à‰ô¤ì(€½¹ÍĞ„õ‘½Õµ•¹Ğ¹É•…Ñ•±•µ•¹Ğ ‰„ˆ¤ì(€„¹¡É•˜õUI0¹É•…Ñ•=‰©•ÑUI0¡‰±½ˆ¤ì(€„¹‘½İ¹±½…õÉ•Á½ÉÑ•}…É¡¥Ù½}áå|‘ì¡ÍÑ…Ñ”¹ÍÑÕ‘•¹Ğ¹¹…µ•ñğ‰…±Õµ¹¼ˆ¤¹É•Á±…” ½my„µèÀ´å|µt¬½¤°‰|ˆ¥ô¹ÑáÑ€ì(€‘½Õµ•¹Ğ¹‰½‘ä¹…ÁÁ•¹‘¡¥±¡„¤í„¹±¥¬ ¤í„¹É•µ½Ù” ¤íUI0¹É•Ù½­•=‰©•ÑUI0¡„¹¡É•˜¤ì)ô()™Õ¹Ñ¥½¸Ñ•…¡•ÉM­¥Á1½¬ ¥ì(€¥˜¡ÍÑ…Ñ”¹…Í”øôÌ¥É•ÑÕÉ¸ì(€ÍÑ…Ñ”¹Á•¹‘¥¹œõ¹Õ±°í¡¥‘•I•½Ù•É•‘A½¥¹Ğ ¤ì(€½¹ÍĞ´õµ¥ÍÍ¥½¹ÍmÍÑ…Ñ”¹…Í•tì(€¥˜¡ÍÑ…Ñ”¹±½¬ñ´¹±½­Ì¹±•¹Ñ ¥ì(€€€ÍÑ…Ñ”¹±½ÍmÍÑ…Ñ”¹…Í•t¹ÁÕÍ ¡´¹±½­ÍmÍÑ…Ñ”¹±½­t¹Á½¥¹Ğ¤ì(€€€ÍÑ…Ñ”¹±½¬¬¬íÍ…Ù” ¤ì(€€€¥˜¡ÍÑ…Ñ”¹±½¬øõ´¹±½­Ì¹±•¹Ñ ¥íÍÑ…Ñ”¹ÁÉ½Ñ½½°ôÀíÉ•¹‘•ÉAÉ½Ñ½½° ¤í¼ ‰ÁÉ½Ñ½½±M•¹”ˆ¥ô(€€€•±Í•íÉ•¹‘•É¡…±±•¹” ¤í¼ ‰¡…±±•¹”ˆ¥ô(€ô(€±½Í•Q•…¡•È ¤)ô)™Õ¹Ñ¥½¸Ñ•…¡•É½µÁ±•Ñ•…Í” ¥ì(€¥˜¡ÍÑ…Ñ”¹…Í”øôÌ¥É•ÑÕÉ¸ì(€ÍÑ…Ñ”¹Á•¹‘¥¹œõ¹Õ±°í¡¥‘•I•½Ù•É•‘A½¥¹Ğ ¤ì(€½¹ÍĞ´õµ¥ÍÍ¥½¹ÍmÍÑ…Ñ”¹…Í•tì(€İ¡¥±”¡ÍÑ…Ñ”¹±½¬ñ´¹±½­Ì¹±•¹Ñ ¥íÍÑ…Ñ”¹±½ÍmÍÑ…Ñ”¹…Í•t¹ÁÕÍ ¡´¹±½­ÍmÍÑ…Ñ”¹±½­t¹Á½¥¹Ğ¤íÍÑ…Ñ”¹±½¬¬­ô(€ÍÑ…Ñ”¹ÁÉ½Ñ½½°õ´¹ÁÉ½Ñ½½°¹±•¹Ñ ´ÄíÍ…Ù” ¤íÉ•¹‘•ÉAÉ½Ñ½½° ¤í¼ ‰ÁÉ½Ñ½½±M•¹”ˆ¤í±½Í•Q•…¡•È ¤)ô)™Õ¹Ñ¥½¸É•Í•Ñ±° ¥ì(€¥˜¡½¹™¥É´ ‹
+ıI•¥¹¥¥…ÈÑ½‘„±„…Ñ¥Ù¥‘…üˆ¤¥ì(€€€±½…±MÑ½É…”¹É•µ½Ù•%Ñ•´ ‰…É¡¥Ù½ae}¥¹•µ…Ñ¥½}ØÜˆ¤í±½…Ñ¥½¸¹É•±½… ¤(€ô)ô(((¼¨€ôôôôôMÕÁ•ÉÙ¥Í§Í¸‘”Í•Í§Í¸€ôôôôô€¨¼)‘½Õµ•¹Ğ¹…‘‘Ù•¹Ñ1¥ÍÑ•¹•È ‰Ù¥Í¥‰¥±¥Ñå¡…¹”ˆ° ¤ôùì(€¥˜¡‘½Õµ•¹Ğ¹¡¥‘‘•¸¤É•¥ÍÑ•É%¹¥‘•¹Ğ ‰¡¥‘‘•¸ˆ¤ì)ô¤ì)İ¥¹‘½Ü¹…‘‘Ù•¹Ñ1¥ÍÑ•¹•È ‰‰±ÕÈˆ° ¤ôùÉ•¥ÍÑ•É%¹¥‘•¹Ğ ‰‰±ÕÈˆ¤¤ì)‘½Õµ•¹Ğ¹…‘‘Ù•¹Ñ1¥ÍÑ•¹•È ‰™Õ±±ÍÉ••¹¡…¹”ˆ° ¤ôùì(€¥˜¡ÍÕÁ•ÉÙ¥Í¥½¹Ñ¥Ù” ¤€˜˜ÍÑ…Ñ”¹ÍÕÁ•ÉÙ¥Í•¹™Õ±±ÍÉ••¹Ñ¥Ù…Ñ•€˜˜€…‘½Õµ•¹Ğ¹™Õ±±ÍÉ••¹±•µ•¹Ğ¥ì(€€€É•¥ÍÑ•É%¹¥‘•¹Ğ ‰™Õ±±ÍÉ••¸ˆ¤ì(€ô)ô¤ì()l‰½Áäˆ°‰ÕĞˆ°‰Á…ÍÑ”‰t¹™½É… ¡•ÙĞôùì(€‘½Õµ•¹Ğ¹…‘‘Ù•¹Ñ1¥ÍÑ•¹•È¡•ÙĞ±”ôùì(€€€¥˜¡ÍÕÁ•ÉÙ¥Í¥½¹Ñ¥Ù” ¤¥ì(€€€€€”¹ÁÉ•Ù•¹Ñ•™…Õ±Ğ ¤ì(€€€€€É•¥ÍÑ•É%¹¥‘•¹Ğ ‰±¥Á‰½…Éˆ¤ì(€€€ô(€ô¤ì)ô¤ì)‘½Õµ•¹Ğ¹…‘‘Ù•¹Ñ1¥ÍÑ•¹•È ‰½¹Ñ•áÑµ•¹Ôˆ±”ôùì(€¥˜¡ÍÕÁ•ÉÙ¥Í¥½¹Ñ¥Ù” ¤¥ì(€€€”¹ÁÉ•Ù•¹Ñ•™…Õ±Ğ ¤ì(€€€É•¥ÍÑ•É%¹¥‘•¹Ğ ‰½¹Ñ•áĞˆ¤ì(€ô)ô¤ì)‘½Õµ•¹Ğ¹…‘‘Ù•¹Ñ1¥ÍÑ•¹•È ‰­•å‘½İ¸ˆ±”ôùì(€¥˜ …ÍÕÁ•ÉÙ¥Í¥½¹Ñ¥Ù” ¤¤É•ÑÕÉ¸ì(€½¹ÍĞ¬õ”¹­•ä¹Ñ½1½İ•É…Í” ¤ì(€½¹ÍĞÉ•ÍÑÉ¥Ñ•ô(€€€”¹­•äôôô‰ÄÈˆñğ(€€€€¡”¹ÑÉ±-•ä€˜˜l‰Œˆ°‰Øˆ°‰àˆ°‰Ôˆ°‰Ìˆ°‰À‰t¹¥¹±Õ‘•Ì¡¬¤¤ñğ(€€€€¡”¹ÑÉ±-•ä€˜˜”¹Í¡¥™Ñ-•ä€˜˜l‰¤ˆ°‰¨ˆ°‰Œ‰t¹¥¹±Õ‘•Ì¡¬¤¤ì(€¥˜¡É•ÍÑÉ¥Ñ•¥ì(€€€”¹ÁÉ•Ù•¹Ñ•™…Õ±Ğ ¤ì(€€€É•¥ÍÑ•É%¹¥‘•¹Ğ ‰Í¡½ÉÑÕĞˆ¤ì(€ô)ô¤ì()Í•Ñ%¹Ñ•ÉÙ…°  ¤ôùì(€¥˜¡ÍÑ…Ñ”¹ÍÑ…ÉÑ•€˜˜€…‘½Õµ•¹Ğ¹¡¥‘‘•¸€˜˜€…ÍÑ…Ñ”¹ÍÕÁ•ÉÙ¥Í•¹¡…É‘1½­•€˜˜…Ñ”¹¹½Ü ¤øõÍÑ…Ñ”¹ÍÕÁ•ÉÙ¥Í•¹Ñ•µÁ1½­U¹Ñ¥°¥ì(€€€ÍÑ…Ñ”¹ÍÕÁ•ÉÙ¥Í•¹…Ñ¥Ù•M•½¹‘Ì¬¬ì(€€€¥˜¡ÍÑ…Ñ”¹ÍÕÁ•ÉÙ¥Í•¹…Ñ¥Ù•M•½¹‘Ì”ÔôôôÀ¤Í…Ù” ¤ì(€€€ÕÁ‘…Ñ•MÕÁ•ÉÙ¥Í¥½¹U$ ¤ì(€ô)ô°ÄÀÀÀ¤ì()Í•Ñ%¹Ñ•ÉÙ…°  ¤ôùì(€¥˜¡ÍÑ…Ñ”¹ÍÑ…ÉÑ•€˜˜ÍÑ…Ñ”¹ÍÕÁ•ÉÙ¥Í•¹™Õ±±ÍÉ••¹Ñ¥Ù…Ñ•€˜˜€…‘½Õµ•¹Ğ¹™Õ±±ÍÉ••¹±•µ•¹Ğ€˜˜€…µ½¹¥Ñ½ÉMÕÁÁÉ•ÍÍ•€˜˜€…‘½Õµ•¹Ğ¹¡¥‘‘•¸¥ì(€€€€¼¼9¼É•¥ÍÑÉ„…Å×´É•Á•Ñ¥‘…µ•¹Ñ”ì™Õ±±ÍÉ••¹¡…¹”å„•¹•É„±„¥¹¥‘•¹¥„¸(€ô)ô°ÄÔÀÀ¤ì(()İ¥¹‘½Ü¹…‘‘Ù•¹Ñ1¥ÍÑ•¹•È ‰‰•™½É•Õ¹±½…ˆ±”ôùì(€¥˜¡ÍÑ…Ñ”¹ÍÑ…ÉÑ•€˜˜€…ÍÑ…Ñ”¹‘½¹”¹•Ù•Éä¡	½½±•…¸¤¥ì(€€€”¹ÁÉ•Ù•¹Ñ•™…Õ±Ğ ¤ì(€€€”¹É•ÑÕÉ¹Y…±Õ”ôˆˆì(€ô)ô¤ì((¼¨µ‰¥•¹ĞÁ…ÉÑ¥±•Ì€¨¼)½¹ÍĞŒõ‘½Õµ•¹Ğ¹•Ñ±•µ•¹Ñ	å% ‰™àˆ¤±ÑàõŒ¹•Ñ½¹Ñ•áĞ ˆÉˆ¤ì)±•ĞÁÑÌõmtì)™Õ¹Ñ¥½¸É•Í¥é” ¥ì(€Œ¹İ¥‘Ñ õ¥¹¹•É]¥‘Ñ ©‘•Ù¥•A¥á•±I…Ñ¥¼íŒ¹¡•¥¡Ğõ¥¹¹•É!•¥¡Ğ©‘•Ù¥•A¥á•±I…Ñ¥¼ì(€Œ¹ÍÑå±”¹İ¥‘Ñ õ¥¹¹•É]¥‘Ñ ¬‰ÁàˆíŒ¹ÍÑå±”¹¡•¥¡Ğõ¥¹¹•É!•¥¡Ğ¬‰Áàˆì(€Ñà¹Í•ÑQÉ…¹Í™½É´¡‘•Ù¥•A¥á•±I…Ñ¥¼°À°À±‘•Ù¥•A¥á•±I…Ñ¥¼°À°À¤ì(€ÁÑÌõÉÉ…ä¹™É½´¡í±•¹Ñ èÜÁô° ¤ôø¡íàé5…Ñ ¹É…¹‘½´ ¤©¥¹¹•É]¥‘Ñ ±äé5…Ñ ¹É…¹‘½´ ¤©¥¹¹•É!•¥¡Ğ±Èé5…Ñ ¹É…¹‘½´ ¤¨Ä¸à¬¸Ğ±Ùàè¡5…Ñ ¹É…¹‘½´ ¤´¸Ô¤¨¸ÄÈ±Ùäé5…Ñ ¹É…¹‘½´ ¤¨¸ÈÈ¬¸ÀÔ±„é5…Ñ ¹É…¹‘½´ ¤¨¸Ô¬¸ÄÕô¤¤)ô)™Õ¹Ñ¥½¸…¹¥´ ¥ì(€Ñà¹±•…ÉI•Ğ À°À±¥¹¹•É]¥‘Ñ ±¥¹¹•É!•¥¡Ğ¤ì(€™½È¡½¹ÍĞÀ½˜ÁÑÌ¥ì(€€€À¹à¬õÀ¹ÙàíÀ¹ä´õÀ¹Ùäì(€€€¥˜¡À¹äğ´ÄÀ¥íÀ¹äõ¥¹¹•É!•¥¡Ğ¬ÄÀíÀ¹àõ5…Ñ ¹É…¹‘½´ ¤©¥¹¹•É]¥‘Ñ¡ô(€€€Ñà¹‰•¥¹A…Ñ  ¤íÑà¹…ÉŒ¡À¹à±À¹ä±À¹È°À±5…Ñ ¹A$¨È¤íÑà¹™¥±±MÑå±”õÉ‰„ ÄÌÀ°ÄäÀ°ÈÔÔ°‘íÀ¹…ô¥€íÑà¹™¥±° ¤(€ô(€É•ÅÕ•ÍÑ¹¥µ…Ñ¥½¹É…µ”¡…¹¥´¤)ô)…‘‘Ù•¹Ñ1¥ÍÑ•¹•È ‰É•Í¥é”ˆ±É•Í¥é”¤íÉ•Í¥é” ¤í…¹¥´ ¤ì((¼¨%¹¥Ñ¥…°¡ÕˆÍÑ…Ñ”¥˜É•ÑÕÉ¹¥¹œ€¨¼)ÕÁ‘…Ñ•!Õ ¤ì((¼¨€ôôôôôXÔ‘å¹…µ¥ŒÙ¥ÍÕ…±Ì€ôôôôô€¨¼)½¹ÍĞÑ•…Í•É1¥¹•Ì€ôl(€€‰…¹…°•ÍÑ…‰±”€¼¼¥¹™½Éµ…§Í¸ƒéÑ¥°Í¥¸É•Ù•±…È™½Éµ…Ìˆ°(€€‰I•ÕÁ•É…§Í¸Í•ÕÉ„€¼¼…‘„É•Ñ¼±¥‰•É„Õ¸Í½±¼ÁÕ¹Ñ¼ˆ°(€€‰%¹Ñ•É¥‘…•½·¥ÑÉ¥„€¼¼É•½¹ÍÑÉÕ§Í¸•á±ÕÍ¥Ù„•¸±¥‰É•Ñ„ˆ°(€€‰5½‘¼¥¹µ•ÉÍ¥Ù¼…Ñ¥Ù¼€¼¼¹¥¹Ÿé¸É•ÍÕ±Ñ…‘¼…¹Ñ¥¥Á…‘¼ˆ)tì)™Õ¹Ñ¥½¸Á…¥¹ÑQ•…¡•Éµ‰¥•¹Ğ ¥ì(€½¹ÍĞÑ…É•Ğõ‘½Õµ•¹Ğ¹ÅÕ•ÉåM•±•Ñ½È ˆ¹½É¹•Èµ¡Õˆ¤ì(€¥˜¡Ñ…É•Ğ¥ì(€€€±•Ğ¤ôÀì(€€€Í•Ñ%¹Ñ•ÉÙ…°  ¤ôùì(€€€€€Ñ…É•Ğ¹¥¹¹•É!Q50õ€ñˆù%¹Ñ•É™…èèğ½ˆøµ½‘¼¥¹µ•ÉÍ¥Ù¼ƒ
+Ü€ñˆùÍÑ…‘¼èğ½ˆø€‘íÑ•…Í•É1¥¹•Ím¤•Ñ•…Í•É1¥¹•Ì¹±•¹Ñ¡uõ€ì(€€€€€¤¬¬ì(€€€ô°€ÈØÀÀ¤ì(€ô)ô)Á…¥¹ÑQ•…¡•Éµ‰¥•¹Ğ ¤ì()½¹ÍĞ½±‘±…Í €ô™±…Í ì)™±…Í €ô™Õ¹Ñ¥½¸ ¥ì(€½±‘±…Í  ¤ì(€½¹ÍĞ…Ñ¥Ù”õ‘½Õµ•¹Ğ¹ÅÕ•ÉåM•±•Ñ½È ˆ¹Í•¹”¹…Ñ¥Ù”€¹Á…¹•°ˆ¤ì(€¥˜¡…Ñ¥Ù”¥ì(€€€…Ñ¥Ù”¹±…ÍÍ1¥ÍĞ¹É•µ½Ù” ‰Õ¹±½¬µ‰ÕÉÍĞˆ¤ìÙ½¥…Ñ¥Ù”¹½™™Í•Ñ]¥‘Ñ ì…Ñ¥Ù”¹±…ÍÍ1¥ÍĞ¹…‘ ‰Õ¹±½¬µ‰ÕÉÍĞˆ¤ì(€ô)ô((ğ½ÍÉ¥ÁĞø(ğ½‰½‘äø(ğ½¡Ñµ°ø
